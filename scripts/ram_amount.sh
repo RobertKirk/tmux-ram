@@ -1,10 +1,8 @@
-raw_ram_total() {
-   echo $(grep -o -E "MemTotal:\s+[0-9]+" /proc/meminfo | grep -o -E "[0-9]+")
-}
+#!/usr/bin/env bash
 
-raw_ram_available() {
-   echo $(grep -o -E "MemAvailable:\s+[0-9]+" /proc/meminfo | grep -o -E "[0-9]+")
-}
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+source "$CURRENT_DIR/helpers.sh"
 
 get_ram_readable() {
   ramused=0
@@ -23,12 +21,11 @@ get_ram_readable() {
 
   suffix="${suffixes[$index]}"
   cut_remainder=$(printf "%0.2f" $remainder | cut -c 2-)
-  echo "$size$cut_remainder$suffix"
+  # echo "$size$cut_remainder$suffix"
+  iostat -c 1 2 | sed '/^\s*$/d' | tail -n 1 | awk '{usage=100-$NF} END {printf("%5.1f%%", usage)}' | sed 's/,/./'
 }
 
 main() {
   get_ram_readable
 }
-
 main
-
